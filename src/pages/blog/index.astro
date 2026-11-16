@@ -1,10 +1,10 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import HeaderNav from '../components/HeaderNav.astro';
-import SectionGrid from '../components/SectionGrid.astro';
-import BlogLedger from '../components/BlogLedger.astro';
-import FooterColophon from '../components/FooterColophon.astro';
-import { getPublishedPosts, getAllTags } from '../lib/blog';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeaderNav from '../../components/HeaderNav.astro';
+import SectionGrid from '../../components/SectionGrid.astro';
+import BlogLedger from '../../components/BlogLedger.astro';
+import FooterColophon from '../../components/FooterColophon.astro';
+import { getPublishedPosts, getAllTags } from '../../lib/blog';
 
 const posts = await getPublishedPosts();
 const tags = getAllTags(posts);
@@ -12,15 +12,15 @@ const formattedCount = String(posts.length).padStart(2, '0');
 ---
 
 <BaseLayout
-	title="Writing — Emmanuel Ikwuoma"
-	description="Technical writing on JavaScript, React patterns, smart contracts, and decentralized systems."
+	title="Blog — Emmanuel Ikwuoma"
+	description="Technical writing on smart contracts, Ethereum, Solidity, React patterns, and decentralized systems."
 >
 	<HeaderNav />
 
 	<main id="main-content">
 		<SectionGrid
-			id="writing-archive"
-			label="03 / WRITING ARCHIVE"
+			id="blog-archive"
+			label="03 / BLOG ARCHIVE"
 			sublabel={`${formattedCount} ${posts.length === 1 ? 'POST' : 'POSTS'}`}
 			bordered={false}
 		>
@@ -42,7 +42,7 @@ const formattedCount = String(posts.length).padStart(2, '0');
 
 			<div class="pb-10 border-b border-border-hairline">
 				<h1 class="text-[clamp(2rem,4vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-left text-text-primary">
-					Technical Writing
+					Blog
 				</h1>
 				<p class="mt-4 text-[15px] md:text-[16px] leading-[1.6] text-text-secondary max-w-[62ch]">
 					Engineering notes on protocol architecture, smart contract safety, and frontend fundamentals.

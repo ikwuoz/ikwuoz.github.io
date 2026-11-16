@@ -96,17 +96,17 @@ const latestPosts = (await getPublishedPosts()).slice(0, 5);
 			<ExperienceList entries={EXPERIENCE_ENTRIES} />
 		</SectionGrid>
 
-		<!-- 03 / WRITING -->
+		<!-- 03 / BLOG -->
 		<SectionGrid
-			id="writing"
-			label="03 / WRITING"
+			id="blog"
+			label="03 / BLOG"
 		>
 			{
 				latestPosts.length > 0 ? (
 					<>
 						<BlogLedger posts={latestPosts} showDescription={false} showTags={false} />
 						<div class="mt-8">
-							<ActionLink label="VIEW ALL POSTS" href="/writing" variant="primary" />
+							<ActionLink label="VIEW ALL POSTS" href="/blog" variant="primary" />
 						</div>
 					</>
 				) : (

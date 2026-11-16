@@ -7,7 +7,7 @@ interface NavItem {
 }
 
 const pathname = Astro.url.pathname;
-const isWritingRoute = pathname.startsWith('/writing') || pathname.startsWith('/blog');
+const isBlogRoute = pathname.startsWith('/blog');
 const isHome = pathname === '/';
 
 const navItems: NavItem[] = [
@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
 		href: isHome ? '#experience' : '/#experience',
 		sectionId: 'experience',
 	},
-	{ id: 'writing', label: 'writing', href: isHome ? '#writing' : '/writing', sectionId: 'writing' },
+	{ id: 'blog', label: 'blog', href: isHome ? '#blog' : '/blog', sectionId: 'blog' },
 	{
 		id: 'contact',
 		label: 'contact',
@@ -43,15 +43,15 @@ const navItems: NavItem[] = [
 	>
 		{
 			navItems.map((item) => {
-				const isActive = isWritingRoute
-					? item.id === 'writing'
+				const isActive = isBlogRoute
+					? item.id === 'blog'
 					: isHome && item.id === 'overview';
 				return (
 					<a
 						href={item.href}
 						data-nav-link={item.sectionId ?? undefined}
 						aria-current={
-							isWritingRoute && item.id === 'writing'
+							isBlogRoute && item.id === 'blog'
 								? 'page'
 								: isActive
 									? 'location'

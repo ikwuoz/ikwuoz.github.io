@@ -1,43 +1,47 @@
-# Astro Starter Kit: Minimal
+# Emmanuel Ikwuoma
 
-```sh
-npm create astro@latest -- --template minimal
-```
+Personal website and technical blog — live at [ikwuoz.github.io](https://ikwuoz.github.io/) ([/blog](https://ikwuoz.github.io/blog)).
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Built with Astro, Tailwind CSS v4, TypeScript, and Astro Content Collections (`@astrojs/mdx` + Shiki).
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+## Project Structure
 
 ```text
-/
-├── public/
+├── public/               # Static assets, favicons, and article images
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── components/       # Navigation, section grid, ledgers, and theme toggle
+│   ├── content/blog/     # Technical articles (.md / .mdx)
+│   ├── data/             # Portfolio overview, selected work, and experience
+│   ├── layouts/          # Base document shell and theme initialization
+│   ├── pages/            # Home (/) and Blog (/blog) routes
+│   └── styles/           # Neo-Swiss Light/Dark tokens and prose styles
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Development
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Requires **Node.js `>= 22.23.4`**.
 
-Any static assets, like images, can be placed in the `public/` directory.
+```sh
+npm install
+npm run dev       # Start local dev server at http://localhost:4321
+npm run build     # Build static site to ./dist/
+npm run preview   # Preview production build locally
+```
 
-## 🧞 Commands
+## Adding Articles
 
-All commands are run from the root of the project, from a terminal:
+Add a `.md` or `.mdx` file under `src/content/blog/` with the required frontmatter:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```yaml
+---
+title: "Article Title"
+description: "Short summary of the post."
+pubDate: 2026-11-16
+tags:
+  - solidity
+  - architecture
+draft: false
+---
+```
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Pushing to `main` triggers [deploy.yml](.github/workflows/deploy.yml) to build and publish to [https://ikwuoz.github.io/](https://ikwuoz.github.io/).

@@ -65,6 +65,5 @@
 
 ---
 
-## 03 / FOOTER & COLOPHON
-- **Colophon Note:** `TYPESET IN PLUS JAKARTA SANS & JETBRAINS MONO. BUILT WITH ASTRO & TAILWIND CSS.`
+## 03 / GET IN TOUCH
 - **Status Indicator:** `● AVAILABLE FOR PROTOCOL & SYSTEMS ENGINEERING` *(Dot in `--accent-signal`)*
