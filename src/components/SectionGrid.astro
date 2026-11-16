@@ -1,0 +1,49 @@
+---
+interface Props {
+	id: string;
+	label: string;
+	headingTag?: 'h2' | 'p';
+	sublabel?: string;
+	bordered?: boolean;
+	asFooter?: boolean;
+}
+
+const {
+	id,
+	label,
+	headingTag = 'h2',
+	sublabel,
+	bordered = true,
+	asFooter = false,
+} = Astro.props;
+
+const Tag = asFooter ? 'footer' : 'section';
+const LabelTag = headingTag;
+---
+
+<Tag
+	id={id}
+	class:list={[
+		'grid grid-cols-1 md:grid-cols-12 gap-y-8 md:gap-x-8',
+		asFooter ? 'py-14 md:py-20' : 'py-16 md:py-24',
+		bordered && 'border-b border-border-hairline',
+	]}
+>
+	<div class="md:col-span-3">
+		<LabelTag class="font-mono text-[13px] uppercase tracking-[0.08em] text-text-secondary">
+			{label}
+		</LabelTag>
+		{
+			sublabel && (
+				<p class="mt-2 font-mono text-[12px] uppercase tracking-[0.08em] text-text-secondary">
+					{sublabel}
+				</p>
+			)
+		}
+		<slot name="rail" />
+	</div>
+
+	<div class="md:col-span-9">
+		<slot />
+	</div>
+</Tag>

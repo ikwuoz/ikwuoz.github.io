@@ -1,0 +1,80 @@
+---
+import { formatLedgerDate, estimateReadTime, type BlogPost } from '../lib/blog';
+
+interface Props {
+	posts: BlogPost[];
+	showDescription?: boolean;
+	showTags?: boolean;
+}
+
+const { posts, showDescription = false, showTags = true } = Astro.props;
+const isCompact = !showDescription && !showTags;
+---
+
+<div class="hidden lg:grid lg:grid-cols-12 gap-x-6 pb-3 border-b border-border-hairline font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary">
+	<div class="lg:col-span-2">DATE</div>
+	<div class="lg:col-span-8">{showTags ? 'ARTICLE & TAGS' : 'ARTICLE'}</div>
+	<div class="lg:col-span-2 text-right">READ</div>
+</div>
+
+<div class="divide-y divide-border-hairline border-b border-border-hairline lg:border-t-0 border-t">
+	{
+		posts.map((post) => {
+			const dateFormatted = formatLedgerDate(post.data.pubDate);
+			const readTime = estimateReadTime(post.body);
+			const tagList = post.data.tags.map((t) => t.toLowerCase());
+
+			return (
+				<article data-blog-row data-tags={tagList.join(',')}>
+					<a
+						href={`/blog/${post.id}`}
+						class:list={[
+							'group block px-3 -mx-3 hover:bg-bg-secondary transition-colors duration-150 ease-out',
+							isCompact ? 'py-5' : 'py-6 lg:py-7',
+						]}
+					>
+						<div class="grid grid-cols-1 lg:grid-cols-12 gap-y-2 lg:gap-x-6 items-baseline">
+							<div class="lg:col-span-2 font-mono text-[12px] leading-[1.4] tracking-[0.08em] text-text-secondary group-hover:text-accent-signal transition-colors duration-150 ease-out">
+								<time datetime={post.data.pubDate.toISOString()}>
+									{dateFormatted}
+								</time>
+							</div>
+
+							<div class="lg:col-span-8">
+								<h3 class="text-[22px] font-medium tracking-[-0.02em] leading-[1.25] text-text-primary group-hover:text-accent-signal transition-colors duration-150 ease-out">
+									{post.data.title}
+								</h3>
+
+								{showDescription && (
+									<p class="mt-2.5 text-[15px] md:text-[16px] leading-[1.6] text-text-secondary max-w-[62ch]">
+										{post.data.description}
+									</p>
+								)}
+
+								{showTags && (
+									<div class="mt-3 flex flex-wrap gap-1.5">
+										{post.data.tags.map((tag) => (
+											<span class="font-mono text-[12px] leading-[1.4] tracking-[0.02em] text-text-secondary bg-bg-secondary group-hover:bg-bg-primary px-2 py-0.5 transition-colors duration-150 ease-out">
+												{tag}
+											</span>
+										))}
+									</div>
+								)}
+							</div>
+
+							<div class="lg:col-span-2 flex lg:justify-end items-center gap-1.5 font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary group-hover:text-accent-signal transition-colors duration-150 ease-out">
+								<span>{readTime}</span>
+								<span
+									class="inline-block transition-transform duration-150 ease-out group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
+									aria-hidden="true"
+								>
+									↗
+								</span>
+							</div>
+						</div>
+					</a>
+				</article>
+			);
+		})
+	}
+</div>

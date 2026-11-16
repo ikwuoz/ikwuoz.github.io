@@ -1,0 +1,30 @@
+---
+import type { ExperienceEntry } from '../data/portfolio';
+
+interface Props {
+	entries: ExperienceEntry[];
+}
+
+const { entries } = Astro.props;
+---
+
+<div class="divide-y divide-border-hairline border-t border-border-hairline md:border-t-0">
+	{
+		entries.map((entry, idx) => (
+			<article
+				class:list={[
+					idx === 0 && 'pt-7 md:pt-0 pb-7',
+					idx > 0 && idx < entries.length - 1 && 'py-7',
+					idx === entries.length - 1 && entries.length > 1 && 'pt-7 pb-0',
+				]}
+			>
+				<h3 class="text-[22px] font-medium tracking-[-0.02em] leading-[1.25] text-text-primary">
+					{entry.role}
+				</h3>
+				<p class="mt-2.5 text-[15px] md:text-[16px] leading-[1.6] text-text-secondary max-w-[62ch]">
+					{entry.focus}
+				</p>
+			</article>
+		))
+	}
+</div>

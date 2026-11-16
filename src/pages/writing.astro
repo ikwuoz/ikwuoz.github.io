@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeaderNav from '../components/HeaderNav.astro';
+import SectionGrid from '../components/SectionGrid.astro';
+import BlogLedger from '../components/BlogLedger.astro';
+import FooterColophon from '../components/FooterColophon.astro';
+import { getPublishedPosts, getAllTags } from '../lib/blog';
+
+const posts = await getPublishedPosts();
+const tags = getAllTags(posts);
+const formattedCount = String(posts.length).padStart(2, '0');
+---
+
+<BaseLayout
+	title="Writing — Emmanuel Ikwuoma"
+	description="Technical writing on JavaScript, React patterns, smart contracts, and decentralized systems."
+>
+	<HeaderNav />
+
+	<main id="main-content">
+		<SectionGrid
+			id="writing-archive"
+			label="03 / WRITING ARCHIVE"
+			sublabel={`${formattedCount} ${posts.length === 1 ? 'POST' : 'POSTS'}`}
+			bordered={false}
+		>
+			<div slot="rail" class="mt-6 space-y-4">
+				<p
+					data-visible-count
+					class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary"
+				>
+					SHOWING: {formattedCount} / {formattedCount}
+				</p>
+				<a
+					href="/"
+					class="inline-flex items-center gap-1.5 font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary hover:text-accent-signal transition-colors duration-150 ease-out"
+				>
+					<span aria-hidden="true">←</span>
+					<span>OVERVIEW</span>
+				</a>
+			</div>
+
+			<div class="pb-10 border-b border-border-hairline">
+				<h1 class="text-[clamp(2rem,4vw,3.25rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-left text-text-primary">
+					Technical Writing
+				</h1>
+				<p class="mt-4 text-[15px] md:text-[16px] leading-[1.6] text-text-secondary max-w-[62ch]">
+					Engineering notes on protocol architecture, smart contract safety, and frontend fundamentals.
+				</p>
+
+				{
+					tags.length > 0 && (
+						<div class="mt-8 flex flex-wrap items-center gap-2" role="group" aria-label="Filter articles by tag">
+							<button
+								type="button"
+								data-tag-filter="all"
+								aria-pressed="true"
+								class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] px-3 py-1.5 border border-text-primary bg-bg-secondary text-text-primary transition-colors duration-150 ease-out cursor-pointer"
+							>
+								[ ALL ]
+							</button>
+							{tags.map((tag) => (
+								<button
+									type="button"
+									data-tag-filter={tag}
+									aria-pressed="false"
+									class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] px-3 py-1.5 border border-border-hairline text-text-secondary hover:text-text-primary hover:bg-bg-secondary hover:border-text-primary transition-colors duration-150 ease-out cursor-pointer"
+								>
+									[ {tag.toUpperCase()} ]
+								</button>
+							))}
+						</div>
+					)
+				}
+			</div>
+
+			<div class="mt-8">
+				{
+					posts.length > 0 ? (
+						<BlogLedger posts={posts} showDescription={true} />
+					) : (
+						<p class="font-mono text-[12px] uppercase tracking-[0.08em] text-text-secondary">
+							NO PUBLISHED DISPATCHES YET.
+						</p>
+					)
+				}
+			</div>
+		</SectionGrid>
+	</main>
+
+	<FooterColophon compact={true} />
+</BaseLayout>
+
+<script>
+	const filterButtons = Array.from(
+		document.querySelectorAll<HTMLButtonElement>('[data-tag-filter]')
+	);
+	const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-blog-row]'));
+	const countEl = document.querySelector<HTMLElement>('[data-visible-count]');
+	const total = rows.length;
+
+	function applyTagFilter(selectedTag: string, syncUrl: boolean): void {
+		const normalized = selectedTag.toLowerCase();
+		let visibleCount = 0;
+
+		rows.forEach((row) => {
+			const rowTags = (row.dataset.tags ?? '').split(',').filter(Boolean);
+			const match = normalized === 'all' || rowTags.includes(normalized);
+			row.classList.toggle('hidden', !match);
+			if (match) visibleCount += 1;
+		});
+
+		filterButtons.forEach((btn) => {
+			const isActive = btn.dataset.tagFilter === normalized;
+			btn.setAttribute('aria-pressed', String(isActive));
+			btn.classList.toggle('border-text-primary', isActive);
+			btn.classList.toggle('bg-bg-secondary', isActive);
+			btn.classList.toggle('text-text-primary', isActive);
+
+			btn.classList.toggle('border-border-hairline', !isActive);
+			btn.classList.toggle('text-text-secondary', !isActive);
+		});
+
+		if (countEl) {
+			const v = String(visibleCount).padStart(2, '0');
+			const t = String(total).padStart(2, '0');
+			countEl.textContent = `SHOWING: ${v} / ${t}`;
+		}
+
+		if (syncUrl) {
+			const url = new URL(window.location.href);
+			if (normalized === 'all') {
+				url.searchParams.delete('tag');
+			} else {
+				url.searchParams.set('tag', normalized);
+			}
+			window.history.replaceState({}, '', url);
+		}
+	}
+
+	const initialTag = new URLSearchParams(window.location.search).get('tag')?.toLowerCase() || 'all';
+	const hasInitial = filterButtons.some((btn) => btn.dataset.tagFilter === initialTag);
+	applyTagFilter(hasInitial ? initialTag : 'all', false);
+
+	filterButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const tag = btn.dataset.tagFilter ?? 'all';
+			applyTagFilter(tag, true);
+		});
+	});
+</script>

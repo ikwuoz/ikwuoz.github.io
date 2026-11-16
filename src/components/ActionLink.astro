@@ -1,0 +1,43 @@
+---
+interface Props {
+	label: string;
+	href: string;
+	external?: boolean;
+	variant?: 'primary' | 'ledger' | 'inline';
+}
+
+const { label, href, external = false, variant = 'primary' } = Astro.props;
+---
+
+{
+	variant === 'inline' ? (
+		<a
+			href={href}
+			target={external ? '_blank' : undefined}
+			rel={external ? 'noopener noreferrer' : undefined}
+			class="lowercase tracking-[0.04em] text-text-primary hover:text-accent-signal underline underline-offset-4 decoration-border-hairline hover:decoration-accent-signal transition-colors duration-150 ease-out"
+		>
+			{label.toLowerCase()}
+		</a>
+	) : (
+		<a
+			href={href}
+			target={external ? '_blank' : undefined}
+			rel={external ? 'noopener noreferrer' : undefined}
+			class:list={[
+				'group/link inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.08em] transition-colors duration-150 ease-out',
+				variant === 'ledger'
+					? 'text-text-primary group-hover:text-accent-signal'
+					: 'text-text-primary hover:text-accent-signal',
+			]}
+		>
+			<span class="group-hover/link:underline underline-offset-4">{label}</span>
+			<span
+				class="inline-block transition-transform duration-150 ease-out group-hover/link:translate-x-[2px] group-hover/link:-translate-y-[2px] group-hover:translate-x-[2px] group-hover:-translate-y-[2px]"
+				aria-hidden="true"
+			>
+				↗
+			</span>
+		</a>
+	)
+}

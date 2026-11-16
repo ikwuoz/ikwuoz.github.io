@@ -1,0 +1,221 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeaderNav from '../../components/HeaderNav.astro';
+import FooterColophon from '../../components/FooterColophon.astro';
+import {
+	getPublishedPosts,
+	formatLedgerDate,
+	estimateReadTime,
+} from '../../lib/blog';
+
+export async function getStaticPaths() {
+	const posts = await getPublishedPosts();
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { post },
+	}));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const formattedDate = formatLedgerDate(post.data.pubDate);
+const readTime = estimateReadTime(post.body);
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<BaseLayout
+	title={`${post.data.title} — Emmanuel Ikwuoma`}
+	description={post.data.description}
+>
+	<HeaderNav />
+
+	<main id="main-content">
+		<article class="grid grid-cols-1 md:grid-cols-12 gap-y-10 md:gap-x-8 py-14 md:py-20">
+			<!-- Sticky Metadata & TOC (Columns 1-3) -->
+			<aside class="md:col-span-3 md:sticky md:top-10 md:self-start space-y-6">
+				<a
+					href="/writing"
+					class="inline-flex items-center gap-1.5 font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary hover:text-accent-signal transition-colors duration-150 ease-out"
+				>
+					<span aria-hidden="true">←</span>
+					<span>ALL WRITING</span>
+				</a>
+
+				<dl class="pt-5 border-t border-border-hairline space-y-4">
+					<div>
+						<dt class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary">
+							PUBLISHED
+						</dt>
+						<dd class="mt-1 font-mono text-[13px] leading-[1.4] text-text-primary">
+							<time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+						</dd>
+					</div>
+
+					<div>
+						<dt class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary">
+							READ TIME
+						</dt>
+						<dd class="mt-1 font-mono text-[13px] leading-[1.4] text-text-primary">
+							{readTime}
+						</dd>
+					</div>
+
+					<div>
+						<dt class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary">
+							TAGS
+						</dt>
+						<dd class="mt-2 flex flex-wrap gap-1.5">
+							{
+								post.data.tags.map((tag) => (
+									<a
+										href={`/writing?tag=${encodeURIComponent(tag.toLowerCase())}`}
+										class="font-mono text-[12px] leading-[1.4] tracking-[0.02em] text-text-secondary bg-bg-secondary border border-border-hairline hover:border-text-primary hover:text-text-primary px-2 py-0.5 transition-colors duration-150 ease-out"
+									>
+										{tag}
+									</a>
+								))
+							}
+						</dd>
+					</div>
+				</dl>
+
+				{
+					tocHeadings.length > 0 && (
+						<nav
+							aria-label="Table of contents"
+							class="pt-5 border-t border-border-hairline"
+						>
+							<p class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary mb-3">
+								CONTENTS
+							</p>
+							<ul class="space-y-2 border-l border-border-hairline">
+								{tocHeadings.map((heading) => (
+									<li>
+										<a
+											href={`#${heading.slug}`}
+											data-toc-link={heading.slug}
+											class:list={[
+												'block border-l-2 border-transparent -ml-[1px] font-mono text-[12px] leading-[1.4] text-text-secondary hover:text-text-primary transition-colors duration-150 ease-out',
+												heading.depth === 3 ? 'pl-5' : 'pl-3',
+											]}
+										>
+											{heading.text}
+										</a>
+									</li>
+								))}
+							</ul>
+						</nav>
+					)
+				}
+			</aside>
+
+			<!-- Article Prose (Columns 4-10, max-width 65ch) -->
+			<div class="md:col-span-7 md:col-start-4 w-full max-w-[65ch]">
+				<header class="pb-8 border-b border-border-hairline">
+					<p class="font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-secondary mb-4">
+						WRITING // {formattedDate} // {readTime}
+					</p>
+					<h1 class="text-[clamp(2rem,4vw,3.125rem)] font-semibold leading-[1.08] tracking-[-0.03em] text-left text-text-primary">
+						{post.data.title}
+					</h1>
+					<p class="mt-5 text-[16px] leading-[1.6] text-text-secondary">
+						{post.data.description}
+					</p>
+				</header>
+
+				<div class="prose-swiss pt-8">
+					<Content />
+				</div>
+			</div>
+		</article>
+	</main>
+
+	<FooterColophon compact={true} />
+</BaseLayout>
+
+<script>
+	// Enhance Shiki code blocks with language label + [ COPY ] button
+	document.querySelectorAll<HTMLPreElement>('.prose-swiss pre.astro-code').forEach((pre) => {
+		if (pre.parentElement?.classList.contains('code-block-shell')) return;
+
+		const shell = document.createElement('div');
+		shell.className = 'code-block-shell';
+
+		const bar = document.createElement('div');
+		bar.className = 'code-block-bar';
+
+		const langSpan = document.createElement('span');
+		langSpan.className = 'code-block-lang';
+		langSpan.textContent = (pre.dataset.language || 'code').toUpperCase();
+
+		const copyBtn = document.createElement('button');
+		copyBtn.type = 'button';
+		copyBtn.className = 'code-copy-btn';
+		copyBtn.textContent = '[ COPY ]';
+		copyBtn.setAttribute('aria-label', 'Copy code snippet');
+
+		let resetTimer: number | undefined;
+		copyBtn.addEventListener('click', async () => {
+			const codeText = pre.querySelector('code')?.textContent ?? pre.textContent ?? '';
+			try {
+				await navigator.clipboard.writeText(codeText);
+				copyBtn.textContent = '[ COPIED ]';
+				copyBtn.setAttribute('data-copied', 'true');
+				window.clearTimeout(resetTimer);
+				resetTimer = window.setTimeout(() => {
+					copyBtn.textContent = '[ COPY ]';
+					copyBtn.removeAttribute('data-copied');
+				}, 1600);
+			} catch {
+				copyBtn.textContent = '[ ERROR ]';
+				window.clearTimeout(resetTimer);
+				resetTimer = window.setTimeout(() => {
+					copyBtn.textContent = '[ COPY ]';
+				}, 1600);
+			}
+		});
+
+		bar.append(langSpan, copyBtn);
+		pre.parentNode?.insertBefore(shell, pre);
+		shell.append(bar, pre);
+	});
+
+	// TOC active heading highlight
+	const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+	const headingTargets = tocLinks
+		.map((link) => {
+			const slug = link.dataset.tocLink;
+			return slug ? document.getElementById(slug) : null;
+		})
+		.filter((el): el is HTMLElement => el !== null);
+
+	function setActiveToc(slug: string): void {
+		tocLinks.forEach((link) => {
+			const isActive = link.dataset.tocLink === slug;
+			link.classList.toggle('text-accent-signal', isActive);
+			link.classList.toggle('border-accent-signal', isActive);
+			link.classList.toggle('text-text-secondary', !isActive);
+			link.classList.toggle('border-transparent', !isActive);
+		});
+	}
+
+	if (headingTargets.length > 0 && 'IntersectionObserver' in window) {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const visible = entries
+					.filter((e) => e.isIntersecting)
+					.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+				if (visible?.target?.id) {
+					setActiveToc(visible.target.id);
+				}
+			},
+			{
+				rootMargin: '-10% 0px -75% 0px',
+				threshold: 0,
+			}
+		);
+
+		headingTargets.forEach((el) => observer.observe(el));
+	}
+</script>

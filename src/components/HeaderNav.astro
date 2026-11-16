@@ -1,0 +1,187 @@
+---
+interface NavItem {
+	id: string;
+	label: string;
+	href: string;
+	sectionId?: string;
+}
+
+const pathname = Astro.url.pathname;
+const isWritingRoute = pathname.startsWith('/writing') || pathname.startsWith('/blog');
+const isHome = pathname === '/';
+
+const navItems: NavItem[] = [
+	{ id: 'overview', label: 'home', href: isHome ? '#overview' : '/', sectionId: 'overview' },
+	{ id: 'work', label: 'work', href: isHome ? '#work' : '/#work', sectionId: 'work' },
+	{
+		id: 'experience',
+		label: 'experience',
+		href: isHome ? '#experience' : '/#experience',
+		sectionId: 'experience',
+	},
+	{ id: 'writing', label: 'writing', href: isHome ? '#writing' : '/writing', sectionId: 'writing' },
+	{
+		id: 'contact',
+		label: 'contact',
+		href: isHome ? '#contact' : '/#contact',
+		sectionId: 'contact',
+	},
+];
+---
+
+<header class="grid grid-cols-[1fr_auto] md:grid-cols-12 gap-y-4 md:gap-x-8 items-center py-7 md:py-9 border-b border-border-hairline">
+	<a
+		href="/"
+		class="col-start-1 row-start-1 md:col-span-3 md:col-start-1 md:row-start-1 justify-self-start font-mono text-[13px] uppercase tracking-[0.08em] text-text-primary hover:text-accent-signal transition-colors duration-150 ease-out"
+	>
+		ikwuoz
+	</a>
+
+	<nav
+		aria-label="Primary navigation"
+		class="col-span-2 row-start-2 md:col-span-6 md:col-start-4 md:row-start-1 flex flex-wrap items-center gap-x-6 sm:gap-x-8 gap-y-2"
+	>
+		{
+			navItems.map((item) => {
+				const isActive = isWritingRoute
+					? item.id === 'writing'
+					: isHome && item.id === 'overview';
+				return (
+					<a
+						href={item.href}
+						data-nav-link={item.sectionId ?? undefined}
+						aria-current={
+							isWritingRoute && item.id === 'writing'
+								? 'page'
+								: isActive
+									? 'location'
+									: undefined
+						}
+						class:list={[
+							'text-[15px] leading-[1.4] tracking-[-0.01em] transition-colors duration-150 ease-out',
+							isActive
+								? 'font-semibold text-text-primary hover:text-accent-signal'
+								: 'font-normal text-text-secondary hover:text-text-primary',
+						]}
+					>
+						{item.label}
+					</a>
+				);
+			})
+		}
+	</nav>
+
+	<button
+		type="button"
+		data-theme-toggle
+		aria-label="Switch to light mode"
+		aria-pressed="true"
+		class="col-start-2 row-start-1 justify-self-end md:col-span-3 md:col-start-10 md:row-start-1 inline-flex items-center font-mono text-[12px] leading-[1.4] tracking-[0.08em] uppercase border border-border-hairline px-3 py-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-secondary hover:border-text-primary transition-colors duration-150 ease-out cursor-pointer shrink-0"
+	>
+		[ <span data-label-light>LIGHT</span> / <span data-label-dark>DARK</span> ]
+	</button>
+</header>
+
+<script>
+	const THEME_STORAGE_KEY = 'ikwuoz-theme';
+	const root = document.documentElement;
+
+	function getActiveTheme(): 'light' | 'dark' {
+		return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+	}
+
+	function syncToggleUI(theme: 'light' | 'dark'): void {
+		const isDark = theme === 'dark';
+		const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+		if (!btn) return;
+
+		btn.setAttribute('aria-pressed', String(isDark));
+		btn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+
+		const lightLabel = btn.querySelector<HTMLElement>('[data-label-light]');
+		const darkLabel = btn.querySelector<HTMLElement>('[data-label-dark]');
+
+		if (lightLabel && darkLabel) {
+			lightLabel.classList.toggle('text-text-primary', !isDark);
+			lightLabel.classList.toggle('font-medium', !isDark);
+			lightLabel.classList.toggle('text-text-secondary', isDark);
+
+			darkLabel.classList.toggle('text-text-primary', isDark);
+			darkLabel.classList.toggle('font-medium', isDark);
+			darkLabel.classList.toggle('text-text-secondary', !isDark);
+		}
+	}
+
+	function applyTheme(theme: 'light' | 'dark', persist: boolean): void {
+		if (theme === 'dark') {
+			root.setAttribute('data-theme', 'dark');
+		} else {
+			root.removeAttribute('data-theme');
+		}
+
+		if (persist) {
+			try {
+				localStorage.setItem(THEME_STORAGE_KEY, theme);
+			} catch {
+				// Ignore storage errors
+			}
+		}
+
+		syncToggleUI(theme);
+	}
+
+	syncToggleUI(getActiveTheme());
+
+	const toggleBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+	toggleBtn?.addEventListener('click', () => {
+		const nextTheme = getActiveTheme() === 'dark' ? 'light' : 'dark';
+		applyTheme(nextTheme, true);
+	});
+
+	// Scroll-spy on the homepage only
+	if (window.location.pathname === '/') {
+		const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+		const sections = navLinks
+			.map((link) => {
+				const id = link.dataset.navLink;
+				return id ? document.getElementById(id) : null;
+			})
+			.filter((el): el is HTMLElement => el !== null);
+
+		const setActiveNav = (activeId: string): void => {
+			navLinks.forEach((link) => {
+				const isActive = link.dataset.navLink === activeId;
+				if (isActive) {
+					link.setAttribute('aria-current', 'location');
+				} else {
+					link.removeAttribute('aria-current');
+				}
+				link.classList.toggle('font-semibold', isActive);
+				link.classList.toggle('text-text-primary', isActive);
+				link.classList.toggle('hover:text-accent-signal', isActive);
+				link.classList.toggle('font-normal', !isActive);
+				link.classList.toggle('text-text-secondary', !isActive);
+				link.classList.toggle('hover:text-text-primary', !isActive);
+			});
+		};
+
+		if (sections.length > 0 && 'IntersectionObserver' in window) {
+			const observer = new IntersectionObserver(
+				(entries) => {
+					const visible = entries
+						.filter((entry) => entry.isIntersecting)
+						.sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+					if (visible?.target?.id) {
+						setActiveNav(visible.target.id);
+					}
+				},
+				{
+					rootMargin: '-20% 0px -60% 0px',
+					threshold: [0, 0.25, 0.5],
+				}
+			);
+
+			sections.forEach((section) => observer.observe(section));
+		}
+	}
+</script>

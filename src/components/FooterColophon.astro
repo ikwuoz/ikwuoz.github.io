@@ -1,0 +1,71 @@
+---
+import ActionLink from './ActionLink.astro';
+import { SITE_META, PRIMARY_LINKS } from '../data/portfolio';
+
+interface Props {
+	compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+
+<footer
+	id="contact"
+	class:list={[
+		'grid grid-cols-1 md:grid-cols-12 gap-y-6 md:gap-x-8',
+		compact ? 'py-12 border-t border-border-hairline' : 'py-14 md:py-20',
+	]}
+>
+	<div class="md:col-span-3">
+		<h2 class="font-mono text-[13px] uppercase tracking-[0.08em] text-text-secondary">
+			04 / GET IN TOUCH
+		</h2>
+	</div>
+
+	<div class="md:col-span-9">
+		{
+			!compact && (
+				<>
+					<div class="flex items-center gap-2.5 font-mono text-[12px] leading-[1.4] uppercase tracking-[0.08em] text-text-primary">
+						<span class="text-accent-signal leading-none" aria-hidden="true">●</span>
+						<span>{SITE_META.statusText}</span>
+					</div>
+
+					<p class="mt-4 text-[15px] md:text-[16px] leading-[1.6] text-text-secondary max-w-[62ch]">
+						{SITE_META.contactNote}
+					</p>
+				</>
+			)
+		}
+
+		<div
+			class:list={[
+				'flex flex-wrap items-center justify-between gap-4 font-mono text-[12px] leading-[1.4] text-text-secondary',
+				!compact && 'mt-8 pt-6 border-t border-border-hairline',
+			]}
+		>
+			<div class="flex flex-wrap items-center gap-2">
+				<span>elsewhere:</span>
+				{
+					PRIMARY_LINKS.map((link, idx) => (
+						<>
+							<ActionLink
+								label={link.label}
+								href={link.href}
+								external={link.external}
+								variant="inline"
+							/>
+							{idx < PRIMARY_LINKS.length - 1 && (
+								<span aria-hidden="true" class="text-text-secondary">·</span>
+							)}
+						</>
+					))
+				}
+			</div>
+
+			<div class="uppercase tracking-[0.06em]">
+				{SITE_META.moniker} // {SITE_META.timezone}
+			</div>
+		</div>
+	</div>
+</footer>
